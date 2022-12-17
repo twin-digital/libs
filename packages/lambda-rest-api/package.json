@@ -6,6 +6,7 @@
   "license": "MIT",
   "main": "lib/index.js",
   "dependencies": {
+    "@aws-sdk/client-lambda": "^3.231.0",
     "@middy/core": "^4.0.4",
     "@middy/http-content-encoding": "^4.0.4",
     "@middy/http-content-negotiation": "^4.0.4",
@@ -36,5 +37,8 @@
       "mode": "library"
     },
     "package": false
-  }
+  },
+  "files": [
+    "/lib"
+  ]
 }
