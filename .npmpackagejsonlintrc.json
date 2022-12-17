@@ -1,0 +1,60 @@
+{
+  "rules": {
+    "prefer-alphabetical-scripts": "error",
+    "prefer-property-order": ["error", [
+      "name",
+      "version",
+      "private",
+      "description",
+      "license",
+
+      "engines",
+
+      "workspaces",
+
+      "type",
+      "main",
+      "module",
+      "typings",
+
+      "scripts",
+
+      "bundleDependencies",
+      "bundledDependencies",
+      "dependencies",
+      "devDependencies",
+      "optionalDependencies",
+      "peerDependencies",
+
+      "assets",
+      "author",
+      "babel",
+      "bin",
+      "browser",
+      "browserify",
+      "bugs",
+      "config",
+      "contributors",
+      "cpu",
+      "directories",
+      "engineStrict",
+      "eslintConfig",
+      "example",
+      "examplestyle",
+      "files",
+      "homepage",
+      "jsnext:main",
+      "keywords",
+      "man",
+      "npmpackagejsonlint",
+      "os",
+      "pre-commit",
+      "preferGlobal",
+      "publishConfig",
+      "repository",
+      "style",
+      "stylelint",
+      "types"
+    ]]
+  }
+}

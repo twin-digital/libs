@@ -1,0 +1,45 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "alwaysStrict": true,
+    "baseUrl": ".",
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "inlineSources": true,
+    "isolatedModules": true,
+    "lib": [
+      "es2018"
+    ],
+    "module": "commonjs",
+    "noEmit": false,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "paths": {
+      "@twin-digital/*": ["packages/*/src"]
+    },
+    "pretty": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "target": "ES2018"
+  },
+  "exclude": [
+    "**/node_modules/*",
+    "**/cdk.out/*",
+    "**/dist/*"
+  ],
+  "include": [
+    "./packages/**/src",
+    "./packages/**/test"
+  ],
+  "ts-node": {
+    "require": ["tsconfig-paths/register"]
+  }
+}
