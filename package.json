@@ -20,11 +20,13 @@
     "lint:package-json": "npmPkgJsonLint --ignorePath .npmpackagejsonlintignore .",
     "login:npm": "run-s login:npm:*",
     "login:npm:twin-digital": "aws codeartifact login --tool npm --domain twin-digital --repository shared --namespace '@twin-digital'",
+    "publish": "changeset publish",
     "test": "jest",
     "typecheck": "tsc",
     "watch": "tsc -w"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.25.2",
     "@twin-digital/ace": "^0.1.0",
     "@types/jest": "29.x",
     "@types/node": "16.x",

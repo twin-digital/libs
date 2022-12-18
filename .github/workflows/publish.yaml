@@ -1,0 +1,66 @@
+name: Publish
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: write
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+env:
+  AWS_REGION: us-east-2
+  AWS_ROLE: arn:aws:iam::162712779706:role/CommonCicd-RootGitHubGithubPublishE17A1812-1JHD46RZ9P14L
+  PUBLISH_DOMAIN: twin-digital
+  PUBLISH_REPOSITORY: shared
+
+jobs:
+  publish:
+    name: Publish Libraries
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+      - name: Setup Node.js 16.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+
+      # get token for publishing packages
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ env.AWS_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+      # TODO: maybe write .npmrc instead of using output->env?
+      - name: Get Publish Token
+        id: publish-token
+        run: |
+          echo "PUBLISH_TOKEN=$(aws codeartifact get-authorization-token --domain "${PUBLISH_DOMAIN}" --query authorizationToken --output text)" >> $GITHUB_OUTPUT
+
+      - name: Install Dependencies
+        env:
+          PUBLISH_TOKEN: ${{ steps.publish-token.outputs.PUBLISH_TOKEN }}
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Publish Package Changesets
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          commit: Publish new packages
+          publish: npm run publish
+          title: Publish new packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+          PUBLISH_TOKEN: ${{ steps.publish-token.outputs.PUBLISH_TOKEN }}
+
+      - name: Push new git tags
+        run: |
+          git push --set-upstream origin changeset-release/main
+          git push --follow-tags
