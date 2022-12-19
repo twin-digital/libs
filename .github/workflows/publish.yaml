@@ -43,11 +43,9 @@ jobs:
             //twin-digital-162712779706.d.codeartifact.us-east-2.amazonaws.com/npm/shared/:_authToken=$(aws codeartifact get-authorization-token --domain "${PUBLISH_DOMAIN}" --query authorizationToken --output text)
           EOF
 
-      - name: Install Dependencies
-        run: npm install
-
-      - name: Build
-        run: npm run build
+      - run: npm install
+      - run: npm run build
+      - run: npm run checks
 
       - name: Publish Package Changesets
         id: changesets
@@ -58,12 +56,3 @@ jobs:
           title: Publish new packages
         env:
           GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
-
-      # - name: Publish
-      #   if: steps.changesets.outputs.hasChangesets == 'false'
-      #   run: npm run publish
-
-      # - name: Push new git tags
-      #   run: |
-      #     git push --set-upstream origin changeset-release/main
-      #     git push --follow-tags

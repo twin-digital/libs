@@ -13,7 +13,7 @@
   "scripts": {
     "build": "npm exec ace --workspaces -- build",
     "cdk": "npm run build && npm run cdk --workspaces --if-present",
-    "checks": "run-p lint typecheck test",
+    "checks": "run-p lint test",
     "dist": "npm exec ace --workspaces -- package",
     "lint": "run-p lint:eslint lint:package-json",
     "lint:eslint": "eslint -c .eslintrc.js .",
@@ -21,7 +21,7 @@
     "login:npm": "run-s login:npm:*",
     "login:npm:twin-digital": "aws codeartifact login --tool npm --domain twin-digital --repository shared --namespace '@twin-digital'",
     "publish-packages": "npx changeset publish",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "typecheck": "tsc",
     "watch": "tsc -w"
   },
