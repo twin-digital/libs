@@ -1,6 +1,6 @@
 {
   "name": "@twin-digital/lambda-rest-api",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "description": "Utilities for creating lambdas for implementing REST APIs",
   "license": "MIT",
