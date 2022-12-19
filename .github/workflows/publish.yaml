@@ -35,15 +35,21 @@ jobs:
         with:
           role-to-assume: ${{ env.AWS_ROLE }}
           aws-region: ${{ env.AWS_REGION }}
-      # TODO: maybe write .npmrc instead of using output->env?
       - name: Get Publish Token
         id: publish-token
         run: |
           echo "PUBLISH_TOKEN=$(aws codeartifact get-authorization-token --domain "${PUBLISH_DOMAIN}" --query authorizationToken --output text)" >> $GITHUB_OUTPUT
-
-      - name: Install Dependencies
+      - name: Creating .npmrc
+        run: |
+          cat << EOF > "$HOME/.npmrc"
+            @twin-digital:registry=https://twin-digital-162712779706.d.codeartifact.us-east-2.amazonaws.com/npm/shared/
+            //twin-digital-162712779706.d.codeartifact.us-east-2.amazonaws.com/npm/shared/:always-auth=true
+            //twin-digital-162712779706.d.codeartifact.us-east-2.amazonaws.com/npm/shared/:_authToken=${PUBLISH_TOKEN}
+          EOF
         env:
           PUBLISH_TOKEN: ${{ steps.publish-token.outputs.PUBLISH_TOKEN }}
+
+      - name: Install Dependencies
         run: npm install
 
       - name: Build
@@ -58,9 +64,8 @@ jobs:
           title: Publish new packages
         env:
           GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
-          PUBLISH_TOKEN: ${{ steps.publish-token.outputs.PUBLISH_TOKEN }}
 
-      - name: Push new git tags
-        run: |
-          git push --set-upstream origin changeset-release/main
-          git push --follow-tags
+      # - name: Push new git tags
+      #   run: |
+      #     git push --set-upstream origin changeset-release/main
+      #     git push --follow-tags
