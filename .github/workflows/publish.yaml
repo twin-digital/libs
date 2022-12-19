@@ -42,8 +42,6 @@ jobs:
             //twin-digital-162712779706.d.codeartifact.us-east-2.amazonaws.com/npm/shared/:always-auth=true
             //twin-digital-162712779706.d.codeartifact.us-east-2.amazonaws.com/npm/shared/:_authToken=$(aws codeartifact get-authorization-token --domain "${PUBLISH_DOMAIN}" --query authorizationToken --output text)
           EOF
-        env:
-          PUBLISH_TOKEN: ${{ steps.publish-token.outputs.PUBLISH_TOKEN }}
 
       - name: Install Dependencies
         run: npm install
@@ -56,13 +54,14 @@ jobs:
         uses: changesets/action@v1
         with:
           commit: Publish new packages
+          publish: npm run publish-packages
           title: Publish new packages
         env:
           GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
 
-      - name: Publish
-        if: steps.changesets.outputs.hasChangesets == 'false'
-        run: npm run publish
+      # - name: Publish
+      #   if: steps.changesets.outputs.hasChangesets == 'false'
+      #   run: npm run publish
 
       # - name: Push new git tags
       #   run: |

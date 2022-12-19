@@ -1,7 +1,6 @@
 {
   "name": "@twin-digital/lambda-rest-api",
   "version": "0.0.2",
-  "private": true,
   "description": "Utilities for creating lambdas for implementing REST APIs",
   "license": "MIT",
   "main": "lib/index.js",
@@ -39,7 +38,10 @@
     "package": false
   },
   "files": [
-    "/lib"
+    "CHANGELOG.md",
+    "/lib/*.d.ts",
+    "/lib/*.js",
+    "/lib/*.json"
   ],
   "publishConfig": {
     "registry": "https://twin-digital-162712779706.d.codeartifact.us-east-1.amazonaws.com/npm/shared/",
