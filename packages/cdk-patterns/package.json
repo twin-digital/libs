@@ -41,9 +41,9 @@
   "author": "Sean Kleinjung",
   "files": [
     "CHANGELOG.md",
-    "/lib/*.d.ts",
-    "/lib/*.js",
-    "/lib/*.json"
+    "/lib/**/*.d.ts",
+    "/lib/**/*.js",
+    "/lib/**/*.json"
   ],
   "publishConfig": {
     "registry": "https://twin-digital-162712779706.d.codeartifact.us-east-2.amazonaws.com/npm/shared/"
