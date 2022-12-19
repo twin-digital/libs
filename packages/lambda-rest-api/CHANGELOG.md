@@ -1,5 +1,11 @@
 # @twin-digital/lambda-rest-api
 
+## 0.0.4
+
+### Patch Changes
+
+- 86bd1a3: Fixed publish configuration to include nested files
+
 ## 0.0.3
 
 ### Patch Changes
