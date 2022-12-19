@@ -35,16 +35,12 @@ jobs:
         with:
           role-to-assume: ${{ env.AWS_ROLE }}
           aws-region: ${{ env.AWS_REGION }}
-      - name: Get Publish Token
-        id: publish-token
-        run: |
-          echo "PUBLISH_TOKEN=$(aws codeartifact get-authorization-token --domain "${PUBLISH_DOMAIN}" --query authorizationToken --output text)" >> $GITHUB_OUTPUT
       - name: Creating .npmrc
         run: |
           cat << EOF > "$HOME/.npmrc"
             @twin-digital:registry=https://twin-digital-162712779706.d.codeartifact.us-east-2.amazonaws.com/npm/shared/
             //twin-digital-162712779706.d.codeartifact.us-east-2.amazonaws.com/npm/shared/:always-auth=true
-            //twin-digital-162712779706.d.codeartifact.us-east-2.amazonaws.com/npm/shared/:_authToken=${PUBLISH_TOKEN}
+            //twin-digital-162712779706.d.codeartifact.us-east-2.amazonaws.com/npm/shared/:_authToken=$(aws codeartifact get-authorization-token --domain "${PUBLISH_DOMAIN}" --query authorizationToken --output text)
           EOF
         env:
           PUBLISH_TOKEN: ${{ steps.publish-token.outputs.PUBLISH_TOKEN }}
@@ -60,10 +56,13 @@ jobs:
         uses: changesets/action@v1
         with:
           commit: Publish new packages
-          publish: npm run publish
           title: Publish new packages
         env:
           GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+
+      - name: Publish
+        if: steps.changesets.outputs.hasChangesets == 'false'
+        run: npm run publish
 
       # - name: Push new git tags
       #   run: |
