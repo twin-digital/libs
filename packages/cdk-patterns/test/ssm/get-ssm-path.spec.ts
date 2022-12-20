@@ -1,5 +1,5 @@
-import type { SsmPathOptions } from '../../src/utils/get-ssm-path'
-import { getSsmPath } from '../../src/utils/get-ssm-path'
+import type { SsmPathOptions } from '../../src/ssm/get-ssm-path'
+import { getSsmPath } from '../../src/ssm/get-ssm-path'
 
 const TestPath: SsmPathOptions = {
   component: 'lambdas/foo/bar',

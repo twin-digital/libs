@@ -1,6 +1,6 @@
 import * as ssm from 'aws-cdk-lib/aws-ssm'
 import { Construct } from 'constructs'
-import { getSsmPath, SsmPathOptions } from '../utils/get-ssm-path'
+import { getSsmPath, SsmPathOptions } from '../ssm/get-ssm-path'
 import { BaseConstruct } from './base-construct'
 
 /**

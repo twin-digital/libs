@@ -1,11 +1,11 @@
 import { IConstruct } from 'constructs'
 import { compact, forEach, join, split } from 'lodash/fp'
-import { getEnvironment } from './environment'
+import { getEnvironment } from '../utils/environment'
 import {
   EnvironmentType,
   getInstanceQualifer,
   getWorkload,
-} from './environment'
+} from '../utils/environment'
 
 export type SsmPathScope =
   | {

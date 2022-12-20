@@ -7,7 +7,7 @@ import {
   setContextValue,
 } from '../utils/context'
 import { EnvironmentType, EnvironmentTypes } from '../utils/environment'
-import { getSsmPath } from '../utils/get-ssm-path'
+import { getSsmPath } from '../ssm/get-ssm-path'
 
 export type StackProps = cdk.StackProps & {
   /**
