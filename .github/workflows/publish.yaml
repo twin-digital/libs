@@ -13,9 +13,7 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 env:
   AWS_REGION: us-east-2
-  AWS_ROLE: arn:aws:iam::162712779706:role/CommonCicd-RootGitHubGithubPublishE17A1812-1JHD46RZ9P14L
-  PUBLISH_DOMAIN: twin-digital
-  PUBLISH_REPOSITORY: shared
+  AWS_ROLE: arn:aws:iam::934979133063:role/CommonCicd-RootGitHubGithubPublishE17A1812-11JO1N1X1SZ1Y
 
 jobs:
   publish:
@@ -29,21 +27,22 @@ jobs:
         with:
           node-version: 16.x
 
-      # get token for publishing packages
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: ${{ env.AWS_ROLE }}
           aws-region: ${{ env.AWS_REGION }}
-      - name: Creating .npmrc
-        run: |
-          cat << EOF > "$HOME/.npmrc"
-            @twin-digital:registry=https://twin-digital-162712779706.d.codeartifact.us-east-2.amazonaws.com/npm/shared/
-            //twin-digital-162712779706.d.codeartifact.us-east-2.amazonaws.com/npm/shared/:always-auth=true
-            //twin-digital-162712779706.d.codeartifact.us-east-2.amazonaws.com/npm/shared/:_authToken=$(aws codeartifact get-authorization-token --domain "${PUBLISH_DOMAIN}" --query authorizationToken --output text)
-          EOF
 
+      - run: npm run login:npm
       - run: npm install
+
+      - name: Build latest 'ace'
+        run: |
+          cd packages/ace
+          npm run build
+          cd ../..
+          npm install
+
       - run: npm run build
       - run: npm run checks
 

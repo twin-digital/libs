@@ -1,0 +1,45 @@
+{
+  "name": "@twin-digital/ace",
+  "version": "0.1.0",
+  "description": "Universal automation command for Twin Digital packages",
+  "license": "MIT",
+  "engines": {
+    "node": ">= 10.13.0"
+  },
+  "scripts": {
+    "build": "esbuild --bundle src/index.ts --platform=node --external:esbuild --outfile=./lib/index.js",
+    "test": "jest",
+    "watch": "npm run build -- --watch"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "tar": "^6.1.11",
+    "yargs": "^15.4.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^28.1.0",
+    "@types/lodash": "4.x",
+    "@types/node": "^18.0.0",
+    "@types/tar": "^6.x",
+    "esbuild": "^0.15.10",
+    "jest": "^26.6.3",
+    "ts-jest": "^26.4.4",
+    "typescript": "^4.8.4"
+  },
+  "peerDependencies": {
+    "esbuild": "^0.15.10"
+  },
+  "author": "Sean Kleinjung",
+  "bin": {
+    "ace": "./lib/index.js"
+  },
+  "homepage": "https://github.com//",
+  "ace": {
+    "build": {
+      "mode": "none"
+    }
+  },
+  "publishConfig": {
+    "registry": "https://twin-digital-934979133063.d.codeartifact.us-east-2.amazonaws.com/npm/shared/"
+  }
+}
