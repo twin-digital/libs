@@ -2,8 +2,8 @@ import * as cdk from 'aws-cdk-lib'
 import * as iam from 'aws-cdk-lib/aws-iam'
 import { Construct } from 'constructs'
 
-import { BaseConstruct } from '../base-construct'
-import { Parameter } from '../parameter'
+import { BaseConstruct } from '../constructs/base-construct'
+import { Parameter } from '../constructs/parameter'
 
 import { Bucket, BucketProps } from './bucket'
 
