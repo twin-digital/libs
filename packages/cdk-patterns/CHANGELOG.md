@@ -1,5 +1,11 @@
 # @twin-digital/cdk-patterns
 
+## 0.1.2
+
+### Patch Changes
+
+- fd90a9e: Add NodeLambda construct.
+
 ## 0.1.1
 
 ### Patch Changes
