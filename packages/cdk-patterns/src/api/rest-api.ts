@@ -2,7 +2,12 @@ import * as apigateway from 'aws-cdk-lib/aws-apigateway'
 import * as lambda from 'aws-cdk-lib/aws-lambda'
 import { Construct } from 'constructs'
 
-import { MethodOptions, ProxyResourceOptions } from 'aws-cdk-lib/aws-apigateway'
+import {
+  MethodOptions,
+  ProxyResourceOptions,
+  ResourceOptions,
+} from 'aws-cdk-lib/aws-apigateway'
+import { compact, isArray, split } from 'lodash/fp'
 
 export type AccountsApiProps = {
   /** ID of the RestApi (API gateway) to register resources with */
@@ -25,11 +30,26 @@ export type RestApiProps = {
   restApiProps?: apigateway.RestApiProps
 }
 
+export type BaseApiBuilderOptions = {
+  /**
+   * Parent resource to use as the root when adding methods, proxies, and resources. The `path` option
+   * will be interpreted relative to this resource.
+   * @default API root
+   */
+  parent?: apigateway.IResource
+
+  /**
+   * URL path of the method, represented as an array of path components
+   * TODO: just take a string and split on '/'
+   */
+  path: string[]
+}
+
 /**
  * Properties used to add a method to a RestApi.
  * @see RestApi.addMethod
  */
-export type AddMethodOptions = {
+export type AddMethodOptions = BaseApiBuilderOptions & {
   /** Indicates whether authorization is required or not (Default: true) */
   authorizationRequired?: boolean
 
@@ -41,12 +61,6 @@ export type AddMethodOptions = {
 
   /** Optional additional options to apply to the method */
   methodOptions?: Omit<MethodOptions, 'authorizer' | 'authorizationType'>
-
-  /**
-   * URL path of the method, represented as an array of path components
-   * TODO: just take a string and split on '/'
-   */
-  path: string[]
 }
 
 /**
@@ -56,22 +70,39 @@ export type AddMethodOptions = {
 export type AddProxyOptions = Omit<
   ProxyResourceOptions,
   'defaultIntegration' | 'defaultMethodOptions'
-> & {
-  /** Indicates whether authorization is required or not (Default: true) */
-  authorizationRequired?: boolean
+> &
+  BaseApiBuilderOptions & {
+    /** Indicates whether authorization is required or not (Default: true) */
+    authorizationRequired?: boolean
 
-  /** Optional additional default options to apply to the proxy methods */
-  defaultMethodOptions?: Omit<MethodOptions, 'authorizer' | 'authorizationType'>
+    /** Optional additional default options to apply to the proxy methods */
+    defaultMethodOptions?: Omit<
+      MethodOptions,
+      'authorizer' | 'authorizationType'
+    >
 
-  /** Lambda function which handles all calls to the proxied resource */
-  handler: lambda.Function
+    /** Lambda function which handles all calls to the proxied resource */
+    handler: lambda.Function
+  }
 
-  /**
-   * URL path of the proxy resource, represented as an array of path components
-   * TODO: just take a string and split on '/'
-   */
-  path: string[]
-}
+/**
+ * Properties used to add a Resource to a RestApi.
+ * @see RestApi.addResource
+ */
+export type AddResourceOptions = Omit<
+  ResourceOptions,
+  'defaultIntegration' | 'defaultMethodOptions'
+> &
+  BaseApiBuilderOptions & {
+    /** Indicates whether authorization is required or not (Default: true) */
+    authorizationRequired?: boolean
+
+    /** Optional additional default options to apply to the proxy methods */
+    defaultMethodOptions?: Omit<
+      MethodOptions,
+      'authorizer' | 'authorizationType'
+    >
+  }
 
 /**
  * An API gateway REST API.
@@ -102,8 +133,12 @@ export class RestApi extends Construct {
 
   private _getResource(
     resource: apigateway.IResource,
-    path: string[]
+    path: string | string[]
   ): apigateway.IResource {
+    if (!isArray(path)) {
+      return this._getResource(resource, compact(split('/', path)))
+    }
+
     if (path.length === 0) {
       return resource
     }
@@ -115,14 +150,19 @@ export class RestApi extends Construct {
     )
   }
 
+  /**
+   * Adds a new method to this API.
+   * @returns the new method
+   */
   public addMethod({
     authorizationRequired = true,
     handler,
     method = 'GET',
     methodOptions = {},
+    parent = this.api.root,
     path,
   }: AddMethodOptions): apigateway.Method {
-    const resource = this._getResource(this.api.root, path)
+    const resource = this._getResource(parent, path)
     return resource.addMethod(
       method,
       new apigateway.LambdaIntegration(handler),
@@ -133,13 +173,18 @@ export class RestApi extends Construct {
     )
   }
 
+  /**
+   * Adds a new proxy resource to this API.
+   * @return the new resource
+   */
   public addProxy({
     authorizationRequired = true,
     defaultMethodOptions,
     handler,
+    parent = this.api.root,
     path,
   }: AddProxyOptions): apigateway.ProxyResource {
-    const resource = this._getResource(this.api.root, path)
+    const resource = this._getResource(parent, path)
     return resource.addProxy({
       defaultIntegration: new apigateway.LambdaIntegration(handler),
       defaultMethodOptions: {
@@ -147,5 +192,16 @@ export class RestApi extends Construct {
         ...(authorizationRequired ? { authorizer: this._authorizer } : {}),
       },
     })
+  }
+
+  /**
+   * Adds a new resource (without methods) to this API.
+   * @return the new resource
+   */
+  public addResource({
+    parent = this.api.root,
+    path,
+  }: AddResourceOptions): apigateway.IResource {
+    return this._getResource(parent, path)
   }
 }
