@@ -1,5 +1,12 @@
 # @twin-digital/lambda-rest-api
 
+## 0.0.5
+
+### Patch Changes
+
+- 2a668de: Add APIGatewayProxyEvent type override to reflect middleware changes.
+- b8d4825: Update npm publish config.
+
 ## 0.0.4
 
 ### Patch Changes

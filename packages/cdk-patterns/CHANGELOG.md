@@ -1,5 +1,12 @@
 # @twin-digital/cdk-patterns
 
+## 0.1.4
+
+### Patch Changes
+
+- c2c5c82: Allow REST API paths to be specified as strings.
+- b8d4825: Update npm publish config.
+
 ## 0.1.3
 
 ### Patch Changes
