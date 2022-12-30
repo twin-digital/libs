@@ -8,7 +8,24 @@ import httpResponseSerializer from '@middy/http-response-serializer'
 import httpSecurityHeaders from '@middy/http-security-headers'
 import httpUrlEncodePathParser from '@middy/http-urlencode-path-parser'
 import validator from '@middy/validator'
+import type { APIGatewayProxyEvent } from 'aws-lambda'
 import { jsonApiErrorHandler } from './jsonapi-error-handler'
+
+export interface APIGatewayProxyEventWithMiddleware<
+  TBody = Record<string, unknown>,
+  TPathParameters = Record<string, unknown>,
+  TQueryStringParameters = Record<string, unknown>
+> extends Omit<
+    APIGatewayProxyEvent,
+    'body' | 'pathParameters' | 'queryStringParameters'
+  > {
+  body: TBody
+  pathParameters: TPathParameters
+  queryStringParameters: TQueryStringParameters
+  multiValueQueryStringParameters: NonNullable<
+    APIGatewayProxyEvent['multiValueQueryStringParameters']
+  >
+}
 
 export type RestApiMiddlewareOptions = {
   /**
