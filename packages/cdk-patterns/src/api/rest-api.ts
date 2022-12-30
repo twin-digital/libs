@@ -40,9 +40,8 @@ export type BaseApiBuilderOptions = {
 
   /**
    * URL path of the method, represented as an array of path components
-   * TODO: just take a string and split on '/'
    */
-  path: string[]
+  path: string[] | string
 }
 
 /**
