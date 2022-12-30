@@ -19,7 +19,7 @@ export interface APIGatewayProxyEventWithMiddleware<
     APIGatewayProxyEvent,
     'body' | 'pathParameters' | 'queryStringParameters'
   > {
-  body: TBody
+  body: TBody | null
   pathParameters: TPathParameters
   queryStringParameters: TQueryStringParameters
   multiValueQueryStringParameters: NonNullable<
