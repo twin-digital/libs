@@ -1,5 +1,11 @@
 # @twin-digital/cdk-patterns
 
+## 0.1.3
+
+### Patch Changes
+
+- 7c23ffc: Create 'addResource' function on RestApi construct.
+
 ## 0.1.2
 
 ### Patch Changes

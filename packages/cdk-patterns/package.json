@@ -1,6 +1,6 @@
 {
   "name": "@twin-digital/cdk-patterns",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "CDK constructs providing reusable patterns used by Twin Digital",
   "license": "MIT",
   "main": "lib/index.js",
