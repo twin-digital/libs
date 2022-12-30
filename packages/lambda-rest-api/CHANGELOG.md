@@ -1,5 +1,11 @@
 # @twin-digital/lambda-rest-api
 
+## 0.1.0
+
+### Minor Changes
+
+- 3308efa: Update API gateway event 'body' type to correctly be possibly null.
+
 ## 0.0.5
 
 ### Patch Changes
