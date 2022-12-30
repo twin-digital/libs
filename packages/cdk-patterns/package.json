@@ -46,7 +46,7 @@
     "/lib/**/*.json"
   ],
   "publishConfig": {
-    "registry": "https://twin-digital-162712779706.d.codeartifact.us-east-2.amazonaws.com/npm/shared/"
+    "registry": "https://twin-digital-934979133063.d.codeartifact.us-east-2.amazonaws.com/npm/shared/"
   },
   "types": "lib/index.d.ts"
 }
