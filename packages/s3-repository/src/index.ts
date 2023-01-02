@@ -175,9 +175,6 @@ const saveObject = async <T extends Record<string, unknown>>(
 ): Promise<void> => {
   const key = prefix === undefined ? id : join('/', [prefix, id])
 
-  console.log('writing. key=', key)
-  console.log('content:', JSON.stringify(data))
-
   const command = new PutObjectCommand({
     Body: JSON.stringify(data),
     Bucket: bucket,
