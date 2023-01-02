@@ -1,6 +1,6 @@
 {
   "name": "@twin-digital/s3-repository",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "minimal persistence API backed by S3",
   "license": "MIT",
   "main": "lib/index.js",
