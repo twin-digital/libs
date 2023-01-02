@@ -1,4 +1,5 @@
 import {
+  DeleteObjectCommand,
   GetObjectCommand,
   ListObjectsV2Command,
   NoSuchKey,
@@ -83,7 +84,22 @@ const deleteObject = async (
   prefix: string | undefined,
   id: string
 ): Promise<void> => {
-  throw new Error('not implemented)')
+  const key = prefix === undefined ? id : join('/', [prefix, id])
+
+  try {
+    const command = new DeleteObjectCommand({
+      Bucket: bucket,
+      Key: key,
+    })
+
+    await client.send(command)
+  } catch (err) {
+    if (!(err instanceof NoSuchKey)) {
+      throw err
+    }
+
+    // NoSuchKey errors will be silently ignored
+  }
 }
 
 /**
