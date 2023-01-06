@@ -1,5 +1,11 @@
 # @twin-digital/lambda-rest-api
 
+## 0.1.2
+
+### Patch Changes
+
+- 42960eb: Improve handling of validation errors.
+
 ## 0.1.1
 
 ### Patch Changes
