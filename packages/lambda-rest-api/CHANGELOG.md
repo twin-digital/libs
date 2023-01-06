@@ -1,5 +1,11 @@
 # @twin-digital/lambda-rest-api
 
+## 0.1.1
+
+### Patch Changes
+
+- 582217b: Include validation errors in 400 responses.
+
 ## 0.1.0
 
 ### Minor Changes
