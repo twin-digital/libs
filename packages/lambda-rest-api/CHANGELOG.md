@@ -1,5 +1,11 @@
 # @twin-digital/lambda-rest-api
 
+## 0.1.4
+
+### Patch Changes
+
+- a49e287: Fixed error preventing validation errors from rendering properly.
+
 ## 0.1.3
 
 ### Patch Changes
