@@ -1,5 +1,11 @@
 # @twin-digital/lambda-rest-api
 
+## 0.1.5
+
+### Patch Changes
+
+- 3db03b9: Removed 'null' as a possible body value option, since with validation it cannot occur.
+
 ## 0.1.4
 
 ### Patch Changes
