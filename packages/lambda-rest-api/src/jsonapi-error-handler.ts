@@ -26,7 +26,6 @@ export const jsonApiErrorHandler = ({
   onError: (request) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const error = <any>request.error
-    const response = request.response
 
     logger(error)
 
@@ -81,8 +80,7 @@ export const jsonApiErrorHandler = ({
       }
     }
 
-    const isValidationError =
-      response?.statusCode === 400 && error.expose && error.cause
+    const isValidationError = error.expose && error.cause
 
     normalizeHttpResponse(request)
 
