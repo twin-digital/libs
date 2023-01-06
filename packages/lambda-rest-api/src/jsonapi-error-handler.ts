@@ -1,7 +1,9 @@
 import middy from '@middy/core'
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
-import { isNumber, isObject } from 'lodash/fp'
+import { isNumber, isObject, map } from 'lodash/fp'
 import { normalizeHttpResponse } from '@middy/util'
+import { ErrorObject } from 'ajv'
+import { omit } from 'lodash'
 
 export type JsonApiErrorHandlerOptions = {
   /**
@@ -22,38 +24,77 @@ export const jsonApiErrorHandler = ({
   APIGatewayProxyResult
 > => ({
   onError: (request) => {
-    const error = request.error
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const error = <any>request.error
+    const response = request.response
 
     logger(error)
 
-    const {
-      code = undefined,
-      detail = undefined,
-      status = 500,
-      title = undefined,
-    } = (isObject(error) ? error : {}) as Record<string, unknown>
+    const createValidationErrorResponse = (validationErrors: ErrorObject[]) => {
+      const ajvErrorToJsonApiError = (
+        validationError: ErrorObject & {
+          dataPath: string
+          instancePath: string
+        }
+      ) => ({
+        detail: validationError.message,
+        meta: {
+          ...omit(validationError, ['dataPath', 'instancePath', 'message']),
+        },
+        source: {
+          pointer: validationError.instancePath ?? validationError.dataPath,
+        },
+        status: '400',
+        title: 'Validation Error',
+      })
 
-    const statusCode = isNumber(status) ? status : 500
+      return {
+        body: JSON.stringify({
+          errors: map(ajvErrorToJsonApiError, validationErrors),
+        }),
+        statusCode: 400,
+      }
+    }
+
+    const createGenericErrorResponse = () => {
+      const {
+        code = undefined,
+        detail = undefined,
+        status = 500,
+        title = undefined,
+      } = (isObject(error) ? error : {}) as Record<string, unknown>
+
+      const statusCode = isNumber(status) ? status : 500
+
+      return {
+        body: JSON.stringify({
+          errors: [
+            {
+              code,
+              detail,
+              status: statusCode,
+              title,
+            },
+          ],
+        }),
+        statusCode,
+      }
+    }
+
+    const isValidationError =
+      response?.statusCode === 400 && error.expose && error.cause
 
     normalizeHttpResponse(request)
 
     request.response = {
       ...(request.response ?? {}),
-      body: JSON.stringify({
-        errors: [
-          {
-            code,
-            detail,
-            status: statusCode,
-            title,
-          },
-        ],
-      }),
+      ...(isValidationError
+        ? createValidationErrorResponse(error.cause)
+        : createGenericErrorResponse()),
       headers: {
         ...(request.response?.headers ?? {}),
         'Content-Type': 'application/json',
       },
-      statusCode,
     }
   },
 })
