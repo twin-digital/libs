@@ -3,7 +3,7 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
 import { isNumber, isObject } from 'lodash/fp'
 import { normalizeHttpResponse } from '@middy/util'
 
-export type JsonApiErrorHandler = {
+export type JsonApiErrorHandlerOptions = {
   /**
    * Log function to report the error to. Defaults to `console.error`
    */
@@ -17,7 +17,7 @@ export type JsonApiErrorHandler = {
  */
 export const jsonApiErrorHandler = ({
   logger = console.error,
-}: JsonApiErrorHandler = {}): middy.MiddlewareObj<
+}: JsonApiErrorHandlerOptions = {}): middy.MiddlewareObj<
   APIGatewayProxyEvent,
   APIGatewayProxyResult
 > => ({

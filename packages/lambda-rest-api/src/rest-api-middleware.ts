@@ -10,6 +10,7 @@ import httpUrlEncodePathParser from '@middy/http-urlencode-path-parser'
 import validator from '@middy/validator'
 import type { APIGatewayProxyEvent } from 'aws-lambda'
 import { jsonApiErrorHandler } from './jsonapi-error-handler'
+import { validationErrorHandler } from './validation-error-handler'
 
 export interface APIGatewayProxyEventWithMiddleware<
   TBody = Record<string, unknown>,
@@ -89,5 +90,6 @@ export const restApiMiddleware = (options: RestApiMiddlewareOptions = {}) => [
     defaultContentType: 'application/json',
   }),
   ...(options.validator === undefined ? [] : [validator(options.validator)]),
+  validationErrorHandler(),
   jsonApiErrorHandler(),
 ]
