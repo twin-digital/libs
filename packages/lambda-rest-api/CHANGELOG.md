@@ -1,5 +1,11 @@
 # @twin-digital/lambda-rest-api
 
+## 0.1.3
+
+### Patch Changes
+
+- 09b8475: Add changes missed in previous commit.
+
 ## 0.1.2
 
 ### Patch Changes
