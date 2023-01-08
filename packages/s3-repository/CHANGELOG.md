@@ -1,5 +1,11 @@
 # @twin-digital/s3-repository
 
+## 1.1.2
+
+### Patch Changes
+
+- 66d4816: Fixed bug causing extra '/' in paths using a prefix.
+
 ## 1.1.1
 
 ### Patch Changes
