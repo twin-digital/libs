@@ -63,17 +63,13 @@ export type S3Repository<T extends Record<string, unknown>> = {
    * Stores an object in the database, given it's ID and data. If an object with the given ID exists, it
    * will be overwritten with the new data. Otherwise, a new object is created.
    */
-  save: (id: string, data: T) => Promise<void>
+  save: (id: string, data: T) => Promise<ObjectCoordinates>
 }
 
-/**
- * Returns a string that is guaranteed to end with the specified suffix. If the value already ends with the
- * suffix, it is not changed. Otherwise, the suffix is appended to the string.
- **/
-const ensureEndsWith =
-  (suffix: string) =>
-  (value: string): string =>
-    value.endsWith(suffix) ? value : `${value}${suffix}`
+export type ObjectCoordinates = {
+  bucket: string
+  key: string
+}
 
 /**
  * Given the S3 client instance, a bucket name, and an object's prefix and id, delete the object from S3.
@@ -172,7 +168,7 @@ const saveObject = async <T extends Record<string, unknown>>(
   prefix: string | undefined,
   id: string,
   data: T
-): Promise<void> => {
+): Promise<ObjectCoordinates> => {
   const key = prefix === undefined ? id : join('/', [prefix, id])
 
   const command = new PutObjectCommand({
@@ -182,6 +178,11 @@ const saveObject = async <T extends Record<string, unknown>>(
   })
 
   await client.send(command)
+
+  return {
+    bucket,
+    key,
+  }
 }
 
 /**
@@ -192,8 +193,7 @@ export const createS3Repository = <T extends Record<string, unknown>>({
   client = new S3Client({}),
   prefix,
 }: S3RepositoryOptions): S3Repository<T> => {
-  const normalizedPrefix =
-    prefix === undefined ? undefined : ensureEndsWith('/')(prefix)
+  const normalizedPrefix = prefix === undefined ? undefined : prefix
 
   return {
     delete: (id: string) => deleteObject(client, bucket, normalizedPrefix, id),
