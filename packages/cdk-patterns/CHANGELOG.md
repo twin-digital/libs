@@ -1,5 +1,11 @@
 # @twin-digital/cdk-patterns
 
+## 0.3.0
+
+### Minor Changes
+
+- 121df46: Flatten logical ID scope for Bucket resources.
+
 ## 0.2.0
 
 ### Minor Changes
