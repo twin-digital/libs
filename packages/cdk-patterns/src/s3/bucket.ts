@@ -3,7 +3,6 @@ import * as iam from 'aws-cdk-lib/aws-iam'
 import * as s3 from 'aws-cdk-lib/aws-s3'
 import { Construct } from 'constructs'
 import { pascalCase } from '../utils/pascal-case'
-import { BaseConstruct } from '../constructs/base-construct'
 
 export type S3EventType =
   | 'Object Access Tier Changed'
@@ -22,7 +21,7 @@ export type BucketProps = Omit<
   'blockPublicAccess' | 'enforceSSL' | 'objectOwnership'
 >
 
-export class Bucket extends BaseConstruct {
+export class Bucket {
   /** The CDK s3 bucket construct */
   public readonly bucket: s3.Bucket
 
@@ -35,10 +34,12 @@ export class Bucket extends BaseConstruct {
   /** EventBridge rules that have been created for this bucket, via the 'on' function. */
   private _rules: { [k in S3EventType]?: events.Rule } = {}
 
-  constructor(scope: Construct, id: string, props: BucketProps = {}) {
-    super(scope, id)
-
-    this.bucket = new s3.Bucket(this, 'Bucket', {
+  constructor(
+    private _scope: Construct,
+    private _id: string,
+    props: BucketProps = {}
+  ) {
+    this.bucket = new s3.Bucket(this._scope, this._id, {
       ...props,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       enforceSSL: true,
@@ -61,23 +62,27 @@ export class Bucket extends BaseConstruct {
    */
   public get readOnlyPolicy(): iam.ManagedPolicy {
     if (this._readOnlyPolicy === undefined) {
-      this._readOnlyPolicy = new iam.ManagedPolicy(this, 'ReadOnlyPolicy', {
-        description: `Allow read-only access to objects in s3 bucket: ${this.bucket.bucketName}`,
-        statements: [
-          new iam.PolicyStatement({
-            actions: ['s3:GetObject'],
-            effect: iam.Effect.ALLOW,
-            resources: [`${this.bucket.bucketArn}/*`],
-            sid: 'ObjectReadWrite',
-          }),
-          new iam.PolicyStatement({
-            actions: ['s3:GetBucketLocation', 's3:ListBucket'],
-            effect: iam.Effect.ALLOW,
-            resources: [`${this.bucket.bucketArn}`],
-            sid: 'BasicBucketAccess',
-          }),
-        ],
-      })
+      this._readOnlyPolicy = new iam.ManagedPolicy(
+        this._scope,
+        `${this._id}ReadOnlyPolicy`,
+        {
+          description: `Allow read-only access to objects in s3 bucket: ${this.bucket.bucketName}`,
+          statements: [
+            new iam.PolicyStatement({
+              actions: ['s3:GetObject'],
+              effect: iam.Effect.ALLOW,
+              resources: [`${this.bucket.bucketArn}/*`],
+              sid: 'ObjectReadWrite',
+            }),
+            new iam.PolicyStatement({
+              actions: ['s3:GetBucketLocation', 's3:ListBucket'],
+              effect: iam.Effect.ALLOW,
+              resources: [`${this.bucket.bucketArn}`],
+              sid: 'BasicBucketAccess',
+            }),
+          ],
+        }
+      )
     }
 
     return this._readOnlyPolicy
@@ -91,23 +96,27 @@ export class Bucket extends BaseConstruct {
    */
   public get readWritePolicy(): iam.ManagedPolicy {
     if (this._readWritePolicy === undefined) {
-      this._readWritePolicy = new iam.ManagedPolicy(this, 'ReadWritePolicy', {
-        description: `Allow read/write access to objects in s3 bucket: ${this.bucket.bucketName}`,
-        statements: [
-          new iam.PolicyStatement({
-            actions: ['s3:GetObject', 's3:DeleteObject', 's3:PutObject'],
-            effect: iam.Effect.ALLOW,
-            resources: [`${this.bucket.bucketArn}/*`],
-            sid: 'ObjectReadWrite',
-          }),
-          new iam.PolicyStatement({
-            actions: ['s3:GetBucketLocation', 's3:ListBucket'],
-            effect: iam.Effect.ALLOW,
-            resources: [`${this.bucket.bucketArn}`],
-            sid: 'BasicBucketAccess',
-          }),
-        ],
-      })
+      this._readWritePolicy = new iam.ManagedPolicy(
+        this._scope,
+        `${this._id}ReadWritePolicy`,
+        {
+          description: `Allow read/write access to objects in s3 bucket: ${this.bucket.bucketName}`,
+          statements: [
+            new iam.PolicyStatement({
+              actions: ['s3:GetObject', 's3:DeleteObject', 's3:PutObject'],
+              effect: iam.Effect.ALLOW,
+              resources: [`${this.bucket.bucketArn}/*`],
+              sid: 'ObjectReadWrite',
+            }),
+            new iam.PolicyStatement({
+              actions: ['s3:GetBucketLocation', 's3:ListBucket'],
+              effect: iam.Effect.ALLOW,
+              resources: [`${this.bucket.bucketArn}`],
+              sid: 'BasicBucketAccess',
+            }),
+          ],
+        }
+      )
     }
 
     return this._readWritePolicy
@@ -135,17 +144,21 @@ export class Bucket extends BaseConstruct {
   private _findOrCreateRule(event: S3EventType): events.Rule {
     let rule = this._rules[event]
     if (rule === undefined) {
-      rule = new events.Rule(this, `Default${pascalCase(event)}Rule`, {
-        eventPattern: {
-          detail: {
-            bucket: {
-              name: [this.bucket.bucketName],
+      rule = new events.Rule(
+        this._scope,
+        `${this._id}Default${pascalCase(event)}Rule`,
+        {
+          eventPattern: {
+            detail: {
+              bucket: {
+                name: [this.bucket.bucketName],
+              },
             },
+            detailType: [event],
+            source: ['aws.s3'],
           },
-          detailType: [event],
-          source: ['aws.s3'],
-        },
-      })
+        }
+      )
 
       this._rules[event] = rule
     }
