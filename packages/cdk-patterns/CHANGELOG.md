@@ -1,5 +1,16 @@
 # @twin-digital/cdk-patterns
 
+## 0.2.0
+
+### Minor Changes
+
+- 91e8797: Only create bucket policies on-demand, instead of automatically.
+
+### Patch Changes
+
+- ff78322: Fix getResourceName to avoid breakage from random suffixes.
+- 487d4e6: Add getQualifiedName utility.
+
 ## 0.1.4
 
 ### Patch Changes
