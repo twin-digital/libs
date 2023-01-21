@@ -1,9 +1,8 @@
-import { compact, flow, isNumber, join, kebabCase, toLower } from 'lodash/fp'
+import { compact, flow, isNumber, join, kebabCase } from 'lodash/fp'
 import { ConstructConstructor, ShortName } from '../types'
 import { HasContext } from './context'
-import { getEnvironment } from './environment'
+import { getEnvironment, getInstanceQualifer, getWorkload } from './environment'
 import { pascalCase } from './pascal-case'
-import { randomString } from './random-string'
 
 export type GetResourceNameOptions = {
   /**
@@ -53,7 +52,9 @@ const getTypePart = (
   return type === undefined ? undefined : TypeToAbbreviationMap[type.name]
 }
 
-// TODO: reject invalid short names
+/**
+ * @deprecated getQualifiedName is preferred, because it is simpler, includes workload, and does not have a broken suffix
+ */
 export const getResourceName = (
   scope: HasContext,
   shortName: string,
@@ -72,6 +73,16 @@ export const getResourceName = (
     namespace,
     getSuffixPart(options),
   ])
+}
+
+/**
+ * Given a scope for context and a short name, returns a qualified name that includes the workload and
+ * namespace qualifier.
+ */
+export const getQualifiedName = (scope: HasContext, name: string) => {
+  const { environmentType, namespace } = getEnvironment(scope)
+  const qualifier = getInstanceQualifer(environmentType, namespace)
+  return join('-', [getWorkload(scope), name, qualifier])
 }
 
 export type NameDecorators = { prefix?: ShortName; suffix?: ShortName }
