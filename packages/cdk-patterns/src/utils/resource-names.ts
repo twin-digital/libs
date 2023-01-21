@@ -7,21 +7,28 @@ import { randomString } from './random-string'
 
 export type GetResourceNameOptions = {
   /**
-   * Specifies whether a random suffix is appended to the resource name or not. If falsy, no suffix is appended.
-   * If true, a 4-character random suffix is appended. If a number other than 0, a suffix with the specified length
-   * is appended.
+   * If set, will cause a suffix to be appended to resource names. The suffix will be the letter 'z' repeated a
+   * certain number of times. If falsy, no suffix is appended. If true, 'zzzz' is appended. If a number other than 0,
+   * a suffix with the specified number of 'z' characters is appended.
+   *
+   * This was originally intended to append a randomly changing suffix to ensure uniqueness. However, this caused
+   * CFN (and therefore cdk) to create new resources instead of using existing ones. This option should no longer
+   * be used.
+   *
+   * @deprecated this appends a static suffix, since non-deterministic resource names cause cdk to recreate resources)
    */
   addSuffix?: number | boolean | undefined
 }
 
 /**
  * Given the GetResourceNameOptions, return the requested suffix.
+ * @deprecated
  **/
 const getSuffixPart = ({ addSuffix }: GetResourceNameOptions) => {
   if (isNumber(addSuffix)) {
-    return randomString(addSuffix)
+    return 'z'.repeat(addSuffix)
   } else if (addSuffix === true) {
-    return randomString(4)
+    return 'z'.repeat(4)
   } else {
     return undefined
   }

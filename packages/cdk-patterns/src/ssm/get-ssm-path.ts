@@ -80,7 +80,7 @@ const asScopeParts = (scope: SsmPathScope) =>
  * The instance qualifier is calculated from the environment and namespace, via the `getInstanceQualifier`
  * method. Workload is the name of the service or application the parameter belongs to. Component is a
  * workload-specific identifier that describes a single resource or other part off the workload. The
- * component is optional, and may correspond to multiple path segemnts (i.e. "lambdas/ingest" or
+ * component is optional, and may correspond to multiple path segments (i.e. "lambdas/ingest" or
  * "rbac/roles/editor"). Finally, parameter is the short descriptive name for the parameter within the
  * scope of the workload (or component, if specified).
  */
