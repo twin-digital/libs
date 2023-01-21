@@ -27,15 +27,15 @@ export class Bucket extends BaseConstruct {
   public readonly bucket: s3.Bucket
 
   /** Managed policy that allows reading objects in this bucket */
-  public readonly readOnlyPolicy: iam.ManagedPolicy
+  private _readOnlyPolicy: iam.ManagedPolicy | undefined
 
   /** Managed policy that allows reading and writing objects in this bucket */
-  public readonly readWritePolicy: iam.ManagedPolicy
+  private _readWritePolicy: iam.ManagedPolicy | undefined
 
   /** EventBridge rules that have been created for this bucket, via the 'on' function. */
   private _rules: { [k in S3EventType]?: events.Rule } = {}
 
-  constructor(scope: Construct, id: string, props: BucketProps) {
+  constructor(scope: Construct, id: string, props: BucketProps = {}) {
     super(scope, id)
 
     this.bucket = new s3.Bucket(this, 'Bucket', {
@@ -45,50 +45,72 @@ export class Bucket extends BaseConstruct {
       objectOwnership: s3.ObjectOwnership.BUCKET_OWNER_ENFORCED,
     })
 
-    this.readOnlyPolicy = new iam.ManagedPolicy(this, 'ReadOnlyPolicy', {
-      ...props,
-      description: `Allow read-only access to objects in s3 bucket: ${this.bucket.bucketName}`,
-      statements: [
-        new iam.PolicyStatement({
-          actions: ['s3:GetObject'],
-          effect: iam.Effect.ALLOW,
-          resources: [`${this.bucket.bucketArn}/*`],
-          sid: 'ObjectReadWrite',
-        }),
-        new iam.PolicyStatement({
-          actions: ['s3:GetBucketLocation', 's3:ListBucket'],
-          effect: iam.Effect.ALLOW,
-          resources: [`${this.bucket.bucketArn}`],
-          sid: 'BasicBucketAccess',
-        }),
-      ],
-    })
-
     // Following todo would require some additional bucket props, for sure
     // TODO: use principal tags to allow repositories to read and write to their artifacts ONLY
     // See: https://lightrun.com/answers/aws-actions-configure-aws-credentials-working-example-of-github-oidc-and-using-session-tags-in-iam-policies
     // See: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_session-tags.html#id_session-tags_adding-assume-role-idp
     // See: https://github.com/aws-actions/configure-aws-credentials#session-tagging
     // See: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_condition-keys.html#condition-keys-principaltag
+  }
 
-    this.readWritePolicy = new iam.ManagedPolicy(this, 'ReadWritePolicy', {
-      ...props,
-      description: `Allow read/write access to objects in s3 bucket: ${this.bucket.bucketName}`,
-      statements: [
-        new iam.PolicyStatement({
-          actions: ['s3:GetObject', 's3:DeleteObject', 's3:PutObject'],
-          effect: iam.Effect.ALLOW,
-          resources: [`${this.bucket.bucketArn}/*`],
-          sid: 'ObjectReadWrite',
-        }),
-        new iam.PolicyStatement({
-          actions: ['s3:GetBucketLocation', 's3:ListBucket'],
-          effect: iam.Effect.ALLOW,
-          resources: [`${this.bucket.bucketArn}`],
-          sid: 'BasicBucketAccess',
-        }),
-      ],
-    })
+  /**
+   * Returns a ManagedPolicy which provides read-only access to this bucket, creating one if it
+   * does not already exist.
+   *
+   * @deprecated we are moving away from creating managed policies for single resources
+   */
+  public get readOnlyPolicy(): iam.ManagedPolicy {
+    if (this._readOnlyPolicy === undefined) {
+      this._readOnlyPolicy = new iam.ManagedPolicy(this, 'ReadOnlyPolicy', {
+        description: `Allow read-only access to objects in s3 bucket: ${this.bucket.bucketName}`,
+        statements: [
+          new iam.PolicyStatement({
+            actions: ['s3:GetObject'],
+            effect: iam.Effect.ALLOW,
+            resources: [`${this.bucket.bucketArn}/*`],
+            sid: 'ObjectReadWrite',
+          }),
+          new iam.PolicyStatement({
+            actions: ['s3:GetBucketLocation', 's3:ListBucket'],
+            effect: iam.Effect.ALLOW,
+            resources: [`${this.bucket.bucketArn}`],
+            sid: 'BasicBucketAccess',
+          }),
+        ],
+      })
+    }
+
+    return this._readOnlyPolicy
+  }
+
+  /**
+   * Returns a ManagedPolicy which provides read-write access to this bucket, creating one if it
+   * does not already exist.
+   *
+   * @deprecated we are moving away from creating managed policies for single resources
+   */
+  public get readWritePolicy(): iam.ManagedPolicy {
+    if (this._readWritePolicy === undefined) {
+      this._readWritePolicy = new iam.ManagedPolicy(this, 'ReadWritePolicy', {
+        description: `Allow read/write access to objects in s3 bucket: ${this.bucket.bucketName}`,
+        statements: [
+          new iam.PolicyStatement({
+            actions: ['s3:GetObject', 's3:DeleteObject', 's3:PutObject'],
+            effect: iam.Effect.ALLOW,
+            resources: [`${this.bucket.bucketArn}/*`],
+            sid: 'ObjectReadWrite',
+          }),
+          new iam.PolicyStatement({
+            actions: ['s3:GetBucketLocation', 's3:ListBucket'],
+            effect: iam.Effect.ALLOW,
+            resources: [`${this.bucket.bucketArn}`],
+            sid: 'BasicBucketAccess',
+          }),
+        ],
+      })
+    }
+
+    return this._readWritePolicy
   }
 
   /**
