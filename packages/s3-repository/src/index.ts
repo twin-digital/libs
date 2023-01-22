@@ -6,7 +6,7 @@ import {
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3'
-import { compact, flow, get, join, map } from 'lodash/fp'
+import { compact, flow, get, map } from 'lodash/fp'
 
 export type S3RepositoryOptions = {
   /**
@@ -72,6 +72,27 @@ export type ObjectCoordinates = {
 }
 
 /**
+ * Given a repository prefix (or undefined), return a normalized prefix string. The string may be empty (for undefined
+ * prefixes), and will always end with a single '/' character regardless of whether the input prefix did or did not
+ * have one. Additional slash characters in the prefix will not be modified.
+ */
+const normalizePrefix = (prefix: string | undefined): string => {
+  if (prefix === undefined) {
+    return ''
+  } else if (prefix.endsWith('/')) {
+    return prefix
+  } else {
+    return `${prefix}/`
+  }
+}
+
+/**
+ * Given an optional repository prefix and a record ID, return the S3 object key for the record
+ */
+const makeKey = (prefix: string | undefined, id: string) =>
+  prefix === undefined ? id : `${normalizePrefix(prefix)}${id}`
+
+/**
  * Given the S3 client instance, a bucket name, and an object's prefix and id, delete the object from S3.
  */
 const deleteObject = async (
@@ -80,12 +101,10 @@ const deleteObject = async (
   prefix: string | undefined,
   id: string
 ): Promise<void> => {
-  const key = prefix === undefined ? id : join('/', [prefix, id])
-
   try {
     const command = new DeleteObjectCommand({
       Bucket: bucket,
-      Key: key,
+      Key: makeKey(prefix, id),
     })
 
     await client.send(command)
@@ -108,12 +127,10 @@ const fetchObject = async <T extends Record<string, unknown>>(
   prefix: string | undefined,
   id: string
 ): Promise<T | null> => {
-  const key = prefix === undefined ? id : join('/', [prefix, id])
-
   try {
     const command = new GetObjectCommand({
       Bucket: bucket,
-      Key: key,
+      Key: makeKey(prefix, id),
     })
 
     const { Body } = await client.send(command)
@@ -150,13 +167,19 @@ const listIds = async (
   bucket: string,
   prefix: string | undefined
 ): Promise<string[]> => {
+  const normalizedPrefix = prefix && normalizePrefix(prefix)
+
   const command = new ListObjectsV2Command({
     Bucket: bucket,
-    Prefix: prefix,
+    Prefix: normalizedPrefix,
   })
 
   const { Contents } = await client.send(command)
-  return flow(map(get('Key')), compact, map(removePrefix(prefix)))(Contents)
+  return flow(
+    map(get('Key')),
+    compact,
+    map(removePrefix(normalizedPrefix))
+  )(Contents)
 }
 
 /**
@@ -169,7 +192,7 @@ const saveObject = async <T extends Record<string, unknown>>(
   id: string,
   data: T
 ): Promise<ObjectCoordinates> => {
-  const key = prefix === undefined ? id : join('/', [prefix, id])
+  const key = makeKey(prefix, id)
 
   const command = new PutObjectCommand({
     Body: JSON.stringify(data),
@@ -193,22 +216,20 @@ export const createS3Repository = <T extends Record<string, unknown>>({
   client = new S3Client({}),
   prefix,
 }: S3RepositoryOptions): S3Repository<T> => {
-  const normalizedPrefix = prefix === undefined ? undefined : prefix
-
   return {
-    delete: (id: string) => deleteObject(client, bucket, normalizedPrefix, id),
-    get: (id: string) => fetchObject<T>(client, bucket, normalizedPrefix, id),
+    delete: (id: string) => deleteObject(client, bucket, prefix, id),
+    get: (id: string) => fetchObject<T>(client, bucket, prefix, id),
     list: async () => {
-      const ids = await listIds(client, bucket, normalizedPrefix)
+      const ids = await listIds(client, bucket, prefix)
+
       // since we just looked up IDs, we should have no 'nulls', but we have to compact because
       // Typescript doesn't know this. (And an object _could_ have been deleted, technically.)
       return compact(
         await Promise.all(
-          map((id) => fetchObject<T>(client, bucket, normalizedPrefix, id), ids)
+          map((id) => fetchObject<T>(client, bucket, prefix, id), ids)
         )
       )
     },
-    save: (id: string, data: T) =>
-      saveObject(client, bucket, normalizedPrefix, id, data),
+    save: (id: string, data: T) => saveObject(client, bucket, prefix, id, data),
   }
 }
