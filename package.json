@@ -20,7 +20,10 @@
     "lint:package-json": "npmPkgJsonLint --ignorePath .npmpackagejsonlintignore .",
     "login:npm": "aws codeartifact login --tool npm --domain twin-digital --domain-owner 934979133063 --repository shared --namespace '@twin-digital'",
     "publish-packages": "npx changeset publish",
-    "test": "jest --passWithNoTests",
+    "test": "jest --passWithNoTests --selectProjects unit",
+    "test:all": "jest --passWithNoTests",
+    "test:fast": "jest --passWithNoTests --selectProjects unit",
+    "test:slow": "jest --passWithNoTests --selectProjects slow",
     "typecheck": "tsc",
     "watch": "tsc -w"
   },

@@ -12,12 +12,24 @@ const getProjectRoots = () => {
 
 export default async (): Promise<Config> => {
   const config = {
-    moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths),
-    preset: 'ts-jest',
-    roots: [
-      ...getProjectRoots().map((root) => `${root}/src`),
-      ...getProjectRoots().map((root) => `${root}/test`),
-    ].filter((dir) => fs.existsSync(dir)),
+    projects: [
+      {
+        displayName: 'unit',
+        moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths),
+        preset: 'ts-jest',
+        roots: [...getProjectRoots().map((root) => `${root}/src`)].filter(
+          (dir) => fs.existsSync(dir)
+        ),
+      },
+      {
+        displayName: 'slow',
+        moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths),
+        preset: 'ts-jest',
+        roots: [...getProjectRoots().map((root) => `${root}/test`)].filter(
+          (dir) => fs.existsSync(dir)
+        ),
+      },
+    ],
   }
 
   return config

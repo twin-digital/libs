@@ -72,7 +72,7 @@ export class Bucket {
               actions: ['s3:GetObject'],
               effect: iam.Effect.ALLOW,
               resources: [`${this.bucket.bucketArn}/*`],
-              sid: 'ObjectReadWrite',
+              sid: 'ObjectRead',
             }),
             new iam.PolicyStatement({
               actions: ['s3:GetBucketLocation', 's3:ListBucket'],

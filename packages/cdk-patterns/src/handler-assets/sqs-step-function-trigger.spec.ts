@@ -1,8 +1,5 @@
 import { get } from 'lodash/fp'
-import {
-  createTemplate,
-  mapEventToInput,
-} from '../../src/handler-assets/sqs-step-function-trigger'
+import { createTemplate, mapEventToInput } from './sqs-step-function-trigger'
 
 const testMessage = {
   value1: 'one',
