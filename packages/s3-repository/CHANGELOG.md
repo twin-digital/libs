@@ -1,5 +1,11 @@
 # @twin-digital/s3-repository
 
+## 1.1.3
+
+### Patch Changes
+
+- 486cb01: Fixed bug causing list() to return no results for repositories using a prefix.
+
 ## 1.1.2
 
 ### Patch Changes
