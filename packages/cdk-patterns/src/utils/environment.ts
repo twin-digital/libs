@@ -28,7 +28,7 @@ export const getInstanceQualifer = (
 export const getEnvironment = (scope: HasContext): EnvironmentMetadata => {
   const environmentType = getContextEnum(
     scope,
-    'environment',
+    'environmentType',
     EnvironmentTypes,
     'dev'
   )
