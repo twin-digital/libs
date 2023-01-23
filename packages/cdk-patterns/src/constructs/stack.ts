@@ -83,7 +83,7 @@ export abstract class Stack extends cdk.Stack {
     if (stack instanceof Stack) {
       return stack
     } else {
-      throw new Error('Uncrecognized stack type.')
+      throw new Error('Unrecognized stack type.')
     }
   }
 

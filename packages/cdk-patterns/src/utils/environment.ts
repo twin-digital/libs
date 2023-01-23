@@ -29,8 +29,7 @@ export const getEnvironment = (scope: HasContext): EnvironmentMetadata => {
   const environmentType = getContextEnum(
     scope,
     'environmentType',
-    EnvironmentTypes,
-    'dev'
+    EnvironmentTypes
   )
   const namespace = getContextString(scope, 'namespace', 'default')
 
