@@ -1,5 +1,11 @@
 # @twin-digital/cdk-patterns
 
+## 0.3.2
+
+### Patch Changes
+
+- e6e5f9f: Remove default environmentType to identify bugs more easily.
+
 ## 0.3.1
 
 ### Patch Changes
