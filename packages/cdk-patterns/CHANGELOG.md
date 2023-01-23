@@ -1,5 +1,11 @@
 # @twin-digital/cdk-patterns
 
+## 0.3.1
+
+### Patch Changes
+
+- 0e59c3b: Fix getEnvironment, which was not detecting intended context keys.
+
 ## 0.3.0
 
 ### Minor Changes
