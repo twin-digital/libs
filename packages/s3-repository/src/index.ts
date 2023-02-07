@@ -7,6 +7,9 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3'
 import { compact, flow, get, map } from 'lodash/fp'
+import { findObjectsByMetadata } from './find-objects-by-metadata'
+import { listObjectKeys } from './list-object-keys'
+import { buildPartitionedPath, getDatePartitions } from './partitioning'
 
 export type S3RepositoryOptions = {
   /**
@@ -87,12 +90,6 @@ const normalizePrefix = (prefix: string | undefined): string => {
 }
 
 /**
- * Given an optional repository prefix and a record ID, return the S3 object key for the record
- */
-const makeKey = (prefix: string | undefined, id: string) =>
-  prefix === undefined ? id : `${normalizePrefix(prefix)}${id}`
-
-/**
  * Given the S3 client instance, a bucket name, and an object's prefix and id, delete the object from S3.
  */
 const deleteObject = async (
@@ -101,43 +98,56 @@ const deleteObject = async (
   prefix: string | undefined,
   id: string
 ): Promise<void> => {
-  try {
-    const command = new DeleteObjectCommand({
-      Bucket: bucket,
-      Key: makeKey(prefix, id),
-    })
+  const keys = await findObjectsByMetadata({
+    bucket,
+    prefix,
+    key: 'id',
+    value: id,
+  })
 
-    await client.send(command)
-  } catch (err) {
-    if (!(err instanceof NoSuchKey)) {
-      throw err
+  if (keys.length === 0) {
+    // not found
+    return
+  }
+
+  for (const key of keys) {
+    try {
+      const command = new DeleteObjectCommand({
+        Bucket: bucket,
+        Key: key,
+      })
+
+      await client.send(command)
+    } catch (err) {
+      if (!(err instanceof NoSuchKey)) {
+        throw err
+      }
+
+      // NoSuchKey errors will be silently ignored
     }
-
-    // NoSuchKey errors will be silently ignored
   }
 }
 
 /**
- * Given the S3 client instance, a bucket name, and an object's prefix and id, return a single document from the bucket
+ * Given the S3 client instance, a bucket name, and an object's key, return a single document from the bucket
  * and parse it. Will return 'null' if there is no such object in the repository.
  */
-const fetchObject = async <T extends Record<string, unknown>>(
+const fetchByKey = async <T extends Record<string, unknown>>(
   client: S3Client,
   bucket: string,
-  prefix: string | undefined,
-  id: string
+  key: string
 ): Promise<T | null> => {
   try {
     const command = new GetObjectCommand({
       Bucket: bucket,
-      Key: makeKey(prefix, id),
+      Key: key,
     })
 
     const { Body } = await client.send(command)
 
     const bodyContent = await Body?.transformToString('utf8')
     if (bodyContent === undefined) {
-      throw new Error(`Unable to read object: Body was undefined. [id=${id}]`)
+      throw new Error(`Unable to read object: Body was undefined. [key=${key}]`)
     }
 
     return JSON.parse(bodyContent) as T
@@ -148,6 +158,36 @@ const fetchObject = async <T extends Record<string, unknown>>(
 
     throw err
   }
+}
+
+/**
+ * Given the S3 client instance, a bucket name, and an object's prefix and id, return a single document from the bucket
+ * and parse it. Will return 'null' if there is no such object in the repository.
+ */
+const fetchById = async <T extends Record<string, unknown>>(
+  client: S3Client,
+  bucket: string,
+  prefix: string | undefined,
+  id: string
+): Promise<T | null> => {
+  const keys = await findObjectsByMetadata({
+    bucket,
+    prefix,
+    key: 'id',
+    value: id,
+  })
+
+  if (keys.length === 0) {
+    // not found
+    return null
+  }
+
+  if (keys.length > 1) {
+    // our s3 bucket is corrupt and has duplicate keys
+    throw new Error(`Multiple objects found with id: ${id}`)
+  }
+
+  return fetchByKey(client, bucket, keys[0])
 }
 
 /** Removes a prefix from the beginning of a string, IFF the string starts with that prefix */
@@ -192,12 +232,22 @@ const saveObject = async <T extends Record<string, unknown>>(
   id: string,
   data: T
 ): Promise<ObjectCoordinates> => {
-  const key = makeKey(prefix, id)
+  const prefixPart = prefix === undefined ? '' : `${normalizePrefix(prefix)}`
+  const key = `${prefixPart}${buildPartitionedPath([
+    ...getDatePartitions(),
+    {
+      name: 'id',
+      value: id,
+    },
+  ])}`
 
   const command = new PutObjectCommand({
     Body: JSON.stringify(data),
     Bucket: bucket,
     Key: key,
+    Metadata: {
+      id,
+    },
   })
 
   await client.send(command)
@@ -218,15 +268,17 @@ export const createS3Repository = <T extends Record<string, unknown>>({
 }: S3RepositoryOptions): S3Repository<T> => {
   return {
     delete: (id: string) => deleteObject(client, bucket, prefix, id),
-    get: (id: string) => fetchObject<T>(client, bucket, prefix, id),
+    get: (id: string) => fetchById<T>(client, bucket, prefix, id),
     list: async () => {
-      const ids = await listIds(client, bucket, prefix)
+      const keys = await listObjectKeys({
+        bucket,
+        client,
+        prefix,
+      })
 
-      // since we just looked up IDs, we should have no 'nulls', but we have to compact because
-      // Typescript doesn't know this. (And an object _could_ have been deleted, technically.)
       return compact(
         await Promise.all(
-          map((id) => fetchObject<T>(client, bucket, prefix, id), ids)
+          map((key) => fetchByKey<T>(client, bucket, key), keys)
         )
       )
     },
