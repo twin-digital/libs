@@ -1,0 +1,38 @@
+{
+  "name": "@twin-digital/projen",
+  "version": "0.0.0",
+  "description": "custom projen components and project types",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "projen": "^0.67.50"
+  },
+  "devDependencies": {
+    "@types/jest": "29.x",
+    "@types/lodash": "4.x",
+    "@types/node": "16.x",
+    "@types/uuid": "9.x",
+    "jest": "29.",
+    "ts-jest": "29.",
+    "typescript": "4.x",
+    "uuid": "^9.0.0"
+  },
+  "author": "Sean Kleinjung",
+  "ace": {
+    "build": {
+      "mode": "library"
+    },
+    "package": false
+  },
+  "files": [
+    "CHANGELOG.md",
+    "/lib/**/*.d.ts",
+    "/lib/**/*.js",
+    "/lib/**/*.json"
+  ],
+  "publishConfig": {
+    "registry": "https://twin-digital-934979133063.d.codeartifact.us-east-1.amazonaws.com/npm/shared/",
+    "access": "restricted"
+  }
+}
