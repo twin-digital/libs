@@ -13,7 +13,7 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 env:
   AWS_REGION: us-east-2
-  AWS_ROLE: arn:aws:iam::934979133063:role/CommonCicd-RootGitHubGithubPublishE17A1812-11JO1N1X1SZ1Y
+  AWS_ROLE: arn:aws:iam::934979133063:role/CommonCicd-RootGitHubGithubActionsACC56793-79JE121HOPUG
 
 jobs:
   publish:
