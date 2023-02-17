@@ -60,7 +60,7 @@ export class AwsCdkPipeline extends FileBase {
       deploymentBranch = 'main',
       deploymentRole,
       nodeVersion,
-      workflowFileName = 'deploy.yml',
+      workflowFileName = 'deploy-cdk.yml',
       workflowName = 'deploy',
     }: AwsCdkPipelineProps
   ) {
